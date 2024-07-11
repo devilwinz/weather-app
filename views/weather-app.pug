@@ -1,0 +1,69 @@
+extends layout
+
+block style
+	link(rel='stylesheet', href='/stylesheets/weather-app.css')
+
+block script
+	-function windStrength(speed) {
+	- 	var strength = "";
+	- 	if(speed < 0.3){
+	- 		strength = "calm";
+	- 	}else if(speed <= 1.5){
+	- 		strength = "light air";
+	- 	}else if(speed <= 3.3){
+	- 		strength = "light breeze";
+	- 	}else if(speed <= 5.4){
+	- 		strength = "gentle breeze";
+	- 	}else if(speed <= 7.9){
+	- 		strength = "moderate breeze";
+	- 	}else if(speed <= 10.7){
+	- 		strength = "fresh breeze";
+	- 	}else if(speed <= 13.8){
+	- 		strength = "strong breeze";
+	- 	}else if(speed <= 17.1){
+	- 		strength = "high wind";
+	- 	}else{
+	- 		strength = "gale";
+	- 	}
+	- 	return strength;
+	-}
+
+	-function windDirection(degree){
+	-	var val = Math.floor((degree/22.5)+.5);
+	-	var arr = ["N","NNE","NE","ENE","E","ESE", "SE", "SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"];
+	-	return arr[(val % 16)]
+	-}
+
+block content
+	div(class='container')
+		div(class='d-flex justify-content-center')
+			div(class='col-xs-12 col-lg-6 mt-3 p-2 border border-2 border-black rounded-4 bg-white' id="searchbox")
+				form(method="POST" action="/search")
+					div(class="d-flex justify-content-center align-items-center")
+						div(class="col-auto")
+							input(class="form-control form-control-lg" name="src_box" id="src_box" type="text" placeholder="Enter your location")
+						div(class="col-auto mx-2")
+							button(class="btn btn-success form-control form-control-lg" type="submit") Search
+					if err
+						div(class="d-flex justify-content-center")
+							p(class="text text-danger") Location Not found. Try search with format "city, country"
+				if data
+					div(class="row justify-content-center my-3")
+						div(class="d-flex justify-content-center align-items-center my-1")
+							p(class="fs-2 fw-bold") #{data.name}, #{data.sys.country}
+						div(class="d-flex justify-content-center align-items-center my-1")
+							- icon_url = `https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`
+							img(src=icon_url)
+							p(class="fs-1") #{data.main.temp}&deg;C
+						div(class="d-flex justify-content-center align-items-center my-1")
+							p(class="fw-bold text-capitalize") Feels like #{data.main.feels_like}&deg;C. #{data.weather[0].description}. #{windStrength(data.wind.speed)}
+						div(class="row row-cols-2 my-1")
+							if data.rain
+								div(class="col")
+									p(class="fs-4") Rain : #{data.rain["1h"]}mm 
+							div(class="col")
+								p(class="fs-4") Wind : #{data.wind.speed}m/s #{windDirection(data.wind.deg)} 
+							div(class="col")
+								p(class="fs-4") Pressure : #{data.main.pressure}hPa
+							div(class="col")
+								p(class="fs-4") Humidity : #{data.main.humidity}%
